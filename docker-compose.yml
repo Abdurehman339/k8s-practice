@@ -1,0 +1,72 @@
+# Pins the project name. Without this it defaults to the directory basename,
+# which silently changes every generated image/container/volume name if the
+# folder is ever renamed.
+name: k8s-practice
+
+services:
+  postgres:
+    image: postgres:16.14-alpine
+    environment:
+      POSTGRES_USER: abdurrehman
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: k8s_docker
+    ports:
+      - '5433:5432'
+    volumes:
+      # Named volume: survives `docker compose down`. Wipe it explicitly with
+      # `docker compose down -v` when you want a clean database.
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U abdurrehman -d k8s_docker']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6380:6379'
+    volumes:
+      # appendonly is on, so Redis actually has state worth persisting here
+      - redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    # Explicit name, rather than the auto-generated <project>-<service>.
+    # This is the name you push to a registry and reference from k8s manifests.
+    image: k8s-practice:local
+    build: .
+    env_file: .env.docker
+    environment:
+      # Override the host.docker.internal values in .env.docker — inside this
+      # network the services are reachable by their compose service names.
+      DATABASE_URL: postgresql://abdurrehman:password@postgres:5432/k8s_docker?schema=public
+      REDIS_DB_HOST: redis
+      REDIS_URL: redis://redis:6379
+      # docker-entrypoint.sh runs `prisma migrate deploy` before starting node.
+      # Safe here because there is exactly one container. Leave this unset on a
+      # multi-replica k8s Deployment and migrate from an initContainer instead.
+      RUN_MIGRATIONS: 'true'
+    ports:
+      - '3001:3001'
+    volumes:
+      # Named volume: winston's log file outlives the container.
+      - applogs:/app/logs
+      # Bind mount, read-only: keeps the signing keys out of the image.
+      # Drop `COPY keys ./keys` from the Dockerfile once you rely on this.
+      - ./keys:/app/keys:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:
+  applogs:

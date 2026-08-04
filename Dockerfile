@@ -52,11 +52,15 @@ COPY package.json ./
 COPY prisma ./prisma
 # resolved via process.cwd() at runtime — must live beside dist/
 COPY templates ./templates
-# RS256 signing keys, also resolved via process.cwd().
-# In Kubernetes, mount a Secret over /app/keys instead of relying on this copy.
-COPY keys ./keys
+# RS256 signing keys are deliberately NOT copied — they are supplied at runtime:
+#   compose     -> bind mount ./keys:/app/keys:ro
+#   docker run  -> -v "$PWD/keys:/app/keys:ro"
+#   kubernetes  -> Secret volume mounted at /app/keys
+# token.module.ts resolves them from process.cwd(), so the app will not boot
+# without one of the above.
+COPY docker-entrypoint.sh ./
 
-RUN chown -R node:node /app
+RUN chmod +x docker-entrypoint.sh && chown -R node:node /app
 USER node
 
 EXPOSE 3001
@@ -64,5 +68,8 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD wget -qO- "http://127.0.0.1:3001/" > /dev/null || exit 1
 
-ENTRYPOINT ["/sbin/tini", "--"]
+# tini reaps zombies and forwards SIGTERM; the entrypoint script applies
+# migrations (when RUN_MIGRATIONS=true) and then execs CMD, so node still
+# ends up as the signal-receiving process.
+ENTRYPOINT ["/sbin/tini", "--", "/app/docker-entrypoint.sh"]
 CMD ["node", "dist/main"]
