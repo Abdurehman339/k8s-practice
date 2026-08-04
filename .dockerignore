@@ -1,0 +1,41 @@
+# Dependencies / build output — rebuilt inside the image for the target platform
+node_modules
+dist
+build
+*.tsbuildinfo
+
+# Secrets — inject at runtime (env vars / k8s Secret), never bake into the image
+.env
+.env.*
+!.env.example
+
+# Local runtime noise
+logs
+*.log
+coverage
+.nyc_output
+.cache
+tmp
+.tmp
+
+# VCS / tooling / editors
+.git
+.gitignore
+.github
+.vscode
+.idea
+*.swp
+
+# OS
+.DS_Store
+._*
+Thumbs.db
+
+# Not needed at runtime
+test
+**/*.spec.ts
+README.md
+ecosystem.config.cjs
+Dockerfile
+.dockerignore
+docker-compose*.yml

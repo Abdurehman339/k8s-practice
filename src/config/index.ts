@@ -4,7 +4,7 @@ export const AppConfig = {
   app: {
     debug: process.env.DEBUG === 'true',
     env: process.env.NODE_ENV || 'development',
-    port: parseInt(process.env.PORT || '9001', 10),
+    port: parseInt(process.env.PORT || '3001', 10),
     prefix: process.env.GLOBAL_PREFIX || 'api/v1',
     dev: process.env.NODE_ENV === 'development',
     prod: process.env.NODE_ENV === 'production',
