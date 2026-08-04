@@ -135,7 +135,8 @@ export class AuthService implements IAuthService {
     const [foundRole, createdUser, generatedToken] = await Promise.all([
       this._database.role.findFirst({ where: { name: role } }),
       userExists || this._database.user.create({ data: finalPayload }),
-      userExists.email_verified || this._token.generate({ email }, EOTP.Verify),
+      userExists?.email_verified ||
+        this._token.generate({ email }, EOTP.Verify),
     ]);
 
     await this._database.userRole.create({
@@ -483,7 +484,14 @@ export class AuthService implements IAuthService {
 
     // If refresh token is still valid, reuse it
     if (expiry > now) {
-      return [signedToken, user.refresh_token];
+      return {
+        status: true,
+        message: 'Token Refreshed Successfully',
+        data: {
+          access_token: signedToken,
+          refresh_token: user.refresh_token,
+        },
+      };
     }
 
     // Otherwise generate a new refresh token
@@ -507,6 +515,13 @@ export class AuthService implements IAuthService {
       }),
     ]);
 
-    return [signedToken, refreshToken];
+    return {
+      status: true,
+      message: 'Token Refreshed Successfully',
+      data: {
+        access_token: signedToken,
+        refresh_token: refreshToken,
+      },
+    };
   }
 }
