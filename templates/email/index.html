@@ -1,0 +1,156 @@
+<!-- templates/email/contact-us.html -->
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Appcrops 2025</title>
+    <style>
+        /* Mobile friendly */
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f4f6f8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            color: #333333;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 640px;
+            margin: 24px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+        }
+
+        .header {
+            background-color: black;
+            color: red;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .body {
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .label {
+            width: 140px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .value {
+            flex: 1;
+            color: #111827;
+        }
+
+        .message-box {
+            background: #f8fafc;
+            border: 1px solid #e6eef8;
+            padding: 12px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+        }
+
+        .footer {
+            padding: 16px 20px;
+            font-size: 13px;
+            color: #6b7280;
+            border-top: 1px solid #f1f5f9;
+            text-align: center;
+        }
+
+        .meta {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 480px) {
+            .label {
+                width: 100%;
+                margin-bottom: 6px;
+            }
+
+            .row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" role="article" aria-label="Contact message">
+        <div class="header">
+             <img 
+             src="https://res.cloudinary.com/duz0xku7i/image/upload/v1756905889/white_logo_ljycon.png" 
+             alt="Appcrops"
+            style="width: 200px; height: auto; object-fit: contain; display: inline-block;" 
+                 />
+            <!-- <div class="meta">Website Contact Form</div> -->
+        </div>
+
+        <div class="body">
+            <div style="margin-bottom:16px;">
+                <strong style="font-size:14px;">Subject:</strong>
+                <div>{{subject}}</div>
+            </div>
+
+            <div class="row">
+                <div class="label">Name</div>
+                <div class="value">{{first_name}} {{last_name}}</div>
+            </div>
+
+            <div class="row">
+                <div class="label">Email</div>
+                <div class="value"><a href="mailto:{{email}}">{{email}}</a></div>
+            </div>
+
+            <div class="row">
+                <div class="label">Phone</div>
+                <div class="value">{{phone}}</div>
+            </div>
+
+            <div class="row">
+                <div class="label">Budget</div>
+                <div class="value">{{budget}}</div>
+            </div>
+
+            <div style="margin: 10px 0;">
+                <div class="label" style="font-weight:700;margin-bottom:6px">Message</div>
+                <div class="message-box">{{message}}</div>
+            </div>
+
+            <div style="margin-top:16px; font-size:13px; color:#64748b;">
+                <div>Quick details:</div>
+                <ul>
+                    <li>How they can be helped: {{how_we_can_help_you}}</li>
+                    <li>Received at: {{received_at}}</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            This message was generated from your website contact form.<br />
+            <small>Do not share private keys or sensitive data via email.</small>
+        </div>
+    </div>
+</body>
+
+</html>

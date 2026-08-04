@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EMediaType {
+  Archive
+  Document
+  Image
+  Video
+  Other
+  Unsupported
+}
+
+enum EOTP {
+  Forgot_Password
+  Verify
+}
+
+enum ESortDirection {
+  asc
+  desc
+}
+
+enum EUserRole {
+  Admin
+  Vendor
+  User
+}
+
+enum EAuthFlow {
+  Apple
+  Google
+  Manual
+}
+
+enum ENotificationType {
+  portfolio_created
+}
+
+enum ENotificationStatus {
+  Read
+  Unread
+}
+
+model User {
+  id       String @id @default(uuid()) @db.Uuid
+  email    String @unique
+  name     String
+  password String
+
+  profile_image_id String? @unique @db.Uuid
+  profile_image    Media?  @relation("profile_media", fields: [profile_image_id], references: [id])
+
+  uploaded_medias Media[]
+
+  email_verified Boolean? @default(false)
+  phone          String?
+
+  is_active Boolean @default(true)
+
+  address String?
+
+  location Json? // GeoJSON stored as JSON (for coordinates)
+
+  refresh_token        String?
+  refresh_token_expiry DateTime?
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime? @db.Timestamptz()
+
+  reciever_notifications Notification[] @relation("notifications_received")
+  sender_notifications   Notification[] @relation("notifications_sent")
+  userRoles              UserRole[]
+}
+
+model Role {
+  id   String @id @default(uuid()) @db.Uuid
+  name String @unique
+
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  deleted_at DateTime?  @db.Timestamptz()
+  userRoles  UserRole[]
+}
+
+model UserRole {
+  id      String @id @default(uuid()) @db.Uuid
+  user_id String @db.Uuid
+  role_id String @db.Uuid
+
+  user User @relation(fields: [user_id], references: [id])
+  role Role @relation(fields: [role_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime? @db.Timestamptz()
+
+  @@index([user_id])
+  @@index([role_id])
+}
+
+model Media {
+  id              String     @id @default(uuid()) @db.Uuid
+  modified_name   String
+  path            String
+  name            String?
+  cloudfront_path String?
+  resource_type   EMediaType
+  mime_type       String
+  size            Int
+  encoding        String
+  downloads       Int?       @default(0)
+
+  user_id String? @db.Uuid
+  user    User?   @relation(fields: [user_id], references: [id])
+
+  profile_user User? @relation("profile_media")
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime? @db.Timestamptz()
+
+  @@index([user_id])
+}
+
+model Notification {
+  id      String @id @default(uuid()) @db.Uuid
+  title   String
+  message String
+  info    Json?
+
+  type   ENotificationType
+  status ENotificationStatus @default(Unread)
+
+  receiver_id String? @db.Uuid
+  receiver    User?   @relation("notifications_received", fields: [receiver_id], references: [id])
+
+  sender_id String? @db.Uuid
+  sender    User?   @relation("notifications_sent", fields: [sender_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime? @db.Timestamptz()
+
+  @@map("notifications")
+}
